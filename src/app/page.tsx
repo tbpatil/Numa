@@ -4,6 +4,7 @@ import { useState } from "react";
 import BudgetSummary from "@/components/BudgetSummary";
 import BillsTable, { BillInput, Bill } from "@/components/BillsTable";
 import AgentLog, { AgentLogEntry } from "@/components/AgentLog";
+import { decideBills } from "@/components/AiDecision";
 
 export default function Home() {
   const [dailyLimit, setDailyLimit] = useState<number>(500); // you can change this in the UI
@@ -16,6 +17,60 @@ export default function Home() {
     .reduce((sum, b) => sum + b.amount, 0);
 
   const remaining = Math.max(0, dailyLimit - spentToday);
+
+  const handleAgentDecide = () => {
+    if (bills.length === 0) {
+      setLogs((prev) => [
+        {
+          time: new Date().toLocaleTimeString(),
+          message: "Agent found no bills to evaluate.",
+        },
+        ...prev,
+      ]);
+      return;
+    }
+
+    const result = decideBills(bills, remaining);
+
+    // Build quick lookup sets
+    const payIds = new Set(result.toPay.map((b) => b.id));
+    const deferIds = new Set(result.toDefer.map((b) => b.id));
+
+    // Update bill statuses
+    setBills((prev) =>
+      prev.map((b) => {
+        if (payIds.has(b.id)) {
+          return { ...b, status: "paid" };
+        }
+        if (deferIds.has(b.id)) {
+          return { ...b, status: "deferred" };
+        }
+        // Review bills stay pending - need human confirmation
+        return b;
+      })
+    );
+
+    // Build comprehensive log message
+    let logMessage = "Agent allocation run:\n" + result.explanation;
+
+    if (result.comparisonNotes && result.comparisonNotes.length > 0) {
+      logMessage += "\n\n📊 Analysis:\n" + result.comparisonNotes.join("\n");
+    }
+
+    if (result.toReview.length > 0) {
+      logMessage += `\n\n⚠️ ${result.toReview.length} bill(s) require your review before payment.`;
+    }
+
+    logMessage += "\n\n(Only pending bills were considered.)";
+
+    setLogs((prev) => [
+      {
+        time: new Date().toLocaleTimeString(),
+        message: logMessage,
+      },
+      ...prev,
+    ]);
+  };
 
   const handleBudgetChange = (newLimit: number) => {
     setDailyLimit(newLimit);
@@ -149,18 +204,9 @@ export default function Home() {
         </div>
         <button
           className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition"
-          onClick={() => {
-            setLogs((prev) => [
-              {
-                time: new Date().toLocaleTimeString(),
-                message:
-                  "Run Agent clicked. (Next step: connect this to Claude + Locus to make real payment decisions.)",
-              },
-              ...prev,
-            ]);
-          }}
+          onClick={handleAgentDecide}
         >
-          Run Agent
+          Run Agent Decision
         </button>
       </header>
 
@@ -173,6 +219,17 @@ export default function Home() {
             remaining={remaining}
             onDailyLimitChange={handleBudgetChange}
           />
+          <div className="flex gap-3">
+            <button
+              onClick={handleAgentDecide}
+              className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition"
+            >
+              Run Agent Decision
+            </button>
+            <div className="text-xs text-slate-400 flex items-center">
+              Agent will prioritize: Infrastructure & API costs → SaaS → Workspace → Food
+            </div>
+          </div>
           <BillsTable
             bills={bills}
             onAddBill={handleAddBill}
