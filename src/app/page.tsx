@@ -28,7 +28,7 @@ export default function Home() {
     ]);
   };
 
-  const handleAddBill = (input: BillInput) => {
+  const handleAddBill = async (input: BillInput) => {
     const id = crypto.randomUUID();
     const newBill: Bill = {
       id,
@@ -49,6 +49,52 @@ export default function Home() {
       },
       ...prev,
     ]);
+
+    // Automatically create a prompt to Locus to pay the vendor
+    try {
+      const prompt = `Please pay ${input.vendor} the amount of $${input.amount.toFixed(2)}. The bill is due on ${input.dueDate}. Category: ${input.category || "General"}.`;
+      
+      setLogs((prev) => [
+        {
+          time: new Date().toLocaleTimeString(),
+          message: `Sending payment request to Locus for ${input.vendor}...`,
+        },
+        ...prev,
+      ]);
+
+      const response = await fetch("/api/locus-query", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        const errorMsg = data.error || "Failed to send prompt to Locus";
+        const details = data.details ? ` (${JSON.stringify(data.details).substring(0, 100)})` : "";
+        throw new Error(errorMsg + details);
+      }
+      
+      setLogs((prev) => [
+        {
+          time: new Date().toLocaleTimeString(),
+          message: `✓ Payment request sent to Locus for ${input.vendor} ($${input.amount}).`,
+        },
+        ...prev,
+      ]);
+    } catch (error: any) {
+      console.error("Error sending prompt to Locus:", error);
+      setLogs((prev) => [
+        {
+          time: new Date().toLocaleTimeString(),
+          message: `⚠ Failed to send payment request to Locus for ${input.vendor}: ${error?.message || "Unknown error"}`,
+        },
+        ...prev,
+      ]);
+    }
   };
 
   const handleMarkPaid = (billId: string) => {
