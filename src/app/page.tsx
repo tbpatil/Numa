@@ -9,6 +9,7 @@ export default function Home() {
   const [dailyLimit, setDailyLimit] = useState<number>(500); // you can change this in the UI
   const [bills, setBills] = useState<Bill[]>([]);
   const [logs, setLogs] = useState<AgentLogEntry[]>([]);
+  const [isPayDemo, setIsPayDemo] = useState(false);
 
   // compute spent and remaining from real bills marked as "paid"
   const spentToday = bills
@@ -135,6 +136,121 @@ export default function Home() {
     ]);
   };
 
+  const handlePayDemo = async () => {
+    setIsPayDemo(true);
+    setLogs((prev) => [
+      {
+        time: new Date().toLocaleTimeString(),
+        message: "🚀 Starting Pay Demo: Complete automated payment flow...",
+      },
+      ...prev,
+    ]);
+
+    try {
+      const checkoutUrl = "https://www.bitrefill.com/checkout/caa2c17c-b5c7-4fbf-9a16-76fa0641d614#o7YqgPRXp3ZTJ7wgfTQB";
+      
+      setLogs((prev) => [
+        {
+          time: new Date().toLocaleTimeString(),
+          message: "Step 1/4: Scraping payment address from Bitrefill...",
+        },
+        ...prev,
+      ]);
+
+      const response = await fetch("/api/bitrefill-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          checkoutUrl,
+          amazonEmail: "***REMOVED***",
+          amazonPassword: "***REMOVED***",
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        const errorMsg = data.error || "Pay Demo failed";
+        const step = data.step ? ` (Failed at: ${data.step})` : "";
+        throw new Error(errorMsg + step);
+      }
+
+      // Log each step
+      if (data.payment_address) {
+        setLogs((prev) => [
+          {
+            time: new Date().toLocaleTimeString(),
+            message: `✓ Step 1/4 Complete: Payment address found: ${data.payment_address}`,
+          },
+          ...prev,
+        ]);
+        setLogs((prev) => [
+          {
+            time: new Date().toLocaleTimeString(),
+            message: "Step 2/4: Initiating Locus payment (5 USDC)...",
+          },
+          ...prev,
+        ]);
+      }
+
+      if (data.gift_card_code) {
+        setLogs((prev) => [
+          {
+            time: new Date().toLocaleTimeString(),
+            message: `✓ Step 2/4 Complete: Payment sent via Locus`,
+          },
+          ...prev,
+        ]);
+        setLogs((prev) => [
+          {
+            time: new Date().toLocaleTimeString(),
+            message: `✓ Step 3/4 Complete: Gift card code obtained: ${data.gift_card_code}`,
+          },
+          ...prev,
+        ]);
+        setLogs((prev) => [
+          {
+            time: new Date().toLocaleTimeString(),
+            message: "Step 4/4: Redeeming gift card on Amazon...",
+          },
+          ...prev,
+        ]);
+      }
+
+      if (data.amazon_redemption?.bill) {
+        setBills((prev) => [data.amazon_redemption.bill, ...prev]);
+        setLogs((prev) => [
+          {
+            time: new Date().toLocaleTimeString(),
+            message: `✓ Step 4/4 Complete: Amazon gift card redeemed! Amount: $${data.amazon_redemption.bill.amount.toFixed(2)}`,
+          },
+          ...prev,
+        ]);
+      }
+
+      setLogs((prev) => [
+        {
+          time: new Date().toLocaleTimeString(),
+          message: `🎉 Pay Demo Complete! All steps successful: Bitrefill → Locus Payment → Gift Card Code → Amazon Redemption`,
+        },
+        ...prev,
+      ]);
+    } catch (error: any) {
+      console.error("Error in Pay Demo:", error);
+      setLogs((prev) => [
+        {
+          time: new Date().toLocaleTimeString(),
+          message: `⚠ Pay Demo failed: ${error?.message || "Unknown error"}`,
+        },
+        ...prev,
+      ]);
+    } finally {
+      setIsPayDemo(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       {/* Top navbar */}
@@ -147,21 +263,30 @@ export default function Home() {
             Set budgets, add real bills, and track what your agent will manage.
           </p>
         </div>
-        <button
-          className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition"
-          onClick={() => {
-            setLogs((prev) => [
-              {
-                time: new Date().toLocaleTimeString(),
-                message:
-                  "Run Agent clicked. (Next step: connect this to Claude + Locus to make real payment decisions.)",
-              },
-              ...prev,
-            ]);
-          }}
-        >
-          Run Agent
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="rounded-xl bg-purple-500 px-4 py-2 text-sm font-medium text-slate-100 hover:bg-purple-400 transition disabled:opacity-60 disabled:cursor-not-allowed"
+            onClick={handlePayDemo}
+            disabled={isPayDemo}
+          >
+            {isPayDemo ? "Running Pay Demo..." : "Pay Demo"}
+          </button>
+          <button
+            className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition"
+            onClick={() => {
+              setLogs((prev) => [
+                {
+                  time: new Date().toLocaleTimeString(),
+                  message:
+                    "Run Agent clicked. (Next step: connect this to Claude + Locus to make real payment decisions.)",
+                },
+                ...prev,
+              ]);
+            }}
+          >
+            Run Agent
+          </button>
+        </div>
       </header>
 
       {/* Content grid */}
