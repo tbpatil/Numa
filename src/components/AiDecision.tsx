@@ -169,6 +169,12 @@ function calculatePriority(bill: Bill): {
   if (invoiceType === "infrastructure" || invoiceType === "api") {
     // Critical services get bonus for being critical
     criticality = 15;
+    
+    // Amazon/AWS gets highest priority boost (for automatic payment triggers)
+    const vendorLower = bill.vendor.toLowerCase();
+    if (vendorLower.match(/amazon|aws|amazon web services/)) {
+      criticality += 25; // Additional boost for Amazon - highest priority
+    }
   } else if (invoiceType === "food") {
     // Food gets negative score if high amount
     if (bill.amount > 50) {
@@ -268,8 +274,23 @@ function compareBills(bills: Bill[]): string[] {
 function needsReview(bill: Bill, budget: number, totalPending: number): boolean {
   const invoiceType = classifyInvoiceType(bill);
   const planTier = detectPlanTier(bill);
+  const vendorLower = bill.vendor.toLowerCase();
+  const isAmazon = vendorLower.match(/amazon|aws|amazon web services/);
 
-  // Large amounts always need review
+  // Critical infrastructure bills (especially Amazon) auto-approve if within budget
+  if ((invoiceType === "infrastructure" || invoiceType === "api") && bill.amount <= budget) {
+    // Amazon gets auto-approved if it fits in budget
+    if (isAmazon) {
+      return false; // Auto-approve Amazon infrastructure
+    }
+    // Other infrastructure/API bills > 80% of budget need review
+    if (bill.amount > budget * 0.8) {
+      return true;
+    }
+    return false; // Auto-approve infrastructure/API bills within budget
+  }
+
+  // Large amounts for non-critical bills need review
   if (bill.amount > budget * 0.5) {
     return true;
   }
@@ -326,9 +347,17 @@ export function decideBills(
     };
   });
 
-  // Sort by score (highest first), then by amount (cheaper first for same priority)
+  // Sort by score (highest first), then Amazon first among equal scores, then by amount (cheaper first)
   scored.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
+    
+    // If scores are equal, prioritize Amazon/AWS first
+    const aIsAmazon = a.bill.vendor.toLowerCase().match(/amazon|aws|amazon web services/);
+    const bIsAmazon = b.bill.vendor.toLowerCase().match(/amazon|aws|amazon web services/);
+    if (aIsAmazon && !bIsAmazon) return -1; // Amazon first
+    if (!aIsAmazon && bIsAmazon) return 1;  // Amazon first
+    
+    // Otherwise sort by amount (cheaper first)
     return a.bill.amount - b.bill.amount;
   });
 

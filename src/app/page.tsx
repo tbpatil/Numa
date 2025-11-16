@@ -193,7 +193,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       {/* Top navbar */}
-      <header className="border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+      <header className="border-b border-slate-800 px-6 py-4">
         <div>
           <h1 className="text-xl font-semibold tracking-tight">
             Numa – Agent CFO
@@ -202,12 +202,6 @@ export default function Home() {
             Set budgets, add real bills, and track what your agent will manage.
           </p>
         </div>
-        <button
-          className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 hover:bg-emerald-400 transition"
-          onClick={handleAgentDecide}
-        >
-          Run Agent Decision
-        </button>
       </header>
 
       {/* Content grid */}
