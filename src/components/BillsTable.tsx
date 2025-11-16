@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { getVendorLogoFromText } from "@/components/vendorLogo";
 
 export type BillStatus = "pending" | "paid" | "deferred";
 
@@ -55,6 +56,8 @@ export default function BillsTable({
   const [amount, setAmount] = useState<number | "">("");
   const [dueDate, setDueDate] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [isParsing, setIsParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -83,6 +86,62 @@ export default function BillsTable({
     setAmount("");
     setDueDate("");
     setReceiptFile(null);
+    setParseError(null);
+  };
+
+  const handleReceiptChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0] ?? null;
+    setReceiptFile(file);
+    setParseError(null);
+
+    if (!file) return;
+
+    try {
+      setIsParsing(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/parse-receipt", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        let errorMessage = "Failed to parse receipt";
+        try {
+          const data = await res.json();
+          errorMessage = data.error || errorMessage;
+          if (data.raw) {
+            errorMessage += ` (Response: ${data.raw})`;
+          }
+        } catch {
+          errorMessage = `Server error: ${res.status} ${res.statusText}`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const data: {
+        vendor: string;
+        amount: number;
+        dueDate: string;
+        category: string;
+      } = await res.json();
+
+      if (data.vendor) setVendor(data.vendor);
+      if (data.category) setCategory(data.category);
+      if (data.amount) setAmount(data.amount);
+      if (data.dueDate) setDueDate(data.dueDate);
+    } catch (err: any) {
+      console.error("Receipt parse error:", err);
+      setParseError(
+        err?.message || "Could not parse receipt. You can fill it manually."
+      );
+    } finally {
+      setIsParsing(false);
+    }
   };
 
   return (
@@ -93,8 +152,18 @@ export default function BillsTable({
             Bills &amp; Subscriptions
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Add real bills by entering details and attaching a receipt or invoice.
+            Upload a receipt or invoice and let the agent pre-fill the bill.
           </p>
+          {isParsing && (
+            <p className="text-[11px] text-emerald-400 mt-1">
+              Reading receipt with Claude…
+            </p>
+          )}
+          {parseError && (
+            <p className="text-[11px] text-amber-400 mt-1">
+              {parseError}
+            </p>
+          )}
         </div>
       </div>
 
@@ -162,24 +231,23 @@ export default function BillsTable({
 
         <div className="md:col-span-2">
           <label className="text-xs text-slate-400 block mb-1">
-            Receipt / Invoice (PDF or image)
+            Receipt / Invoice (image)
           </label>
           <input
             type="file"
-            accept="image/*,.pdf"
+            accept="image/*"
             className="w-full text-xs text-slate-300 file:mr-2 file:rounded-md file:border-0 file:bg-slate-700 file:px-2 file:py-1 file:text-xs file:text-slate-100 hover:file:bg-slate-600"
-            onChange={(e) =>
-              setReceiptFile(e.target.files?.[0] ?? null)
-            }
+            onChange={handleReceiptChange}
           />
         </div>
 
         <div className="md:col-span-3 flex justify-end">
           <button
             type="submit"
-            className="rounded-xl bg-emerald-500 px-4 py-1.5 text-xs font-medium text-slate-950 hover:bg-emerald-400 transition"
+            className="rounded-xl bg-emerald-500 px-4 py-1.5 text-xs font-medium text-slate-950 hover:bg-emerald-400 transition disabled:opacity-60"
+            disabled={isParsing}
           >
-            Add bill
+            {isParsing ? "Parsing…" : "Add bill"}
           </button>
         </div>
       </form>
@@ -215,7 +283,17 @@ export default function BillsTable({
                 className="border-b border-slate-900 last:border-none hover:bg-slate-900/80"
               >
                 <td className="py-2 pr-4">
-                  <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const logo = getVendorLogoFromText(bill.vendor, bill.category);
+                      return logo ? (
+                        <img
+                          src={logo.src}
+                          alt={logo.alt}
+                          className="w-6 h-6 rounded object-contain"
+                        />
+                      ) : null;
+                    })()}
                     <span className="font-medium text-slate-100">
                       {bill.vendor}
                     </span>
