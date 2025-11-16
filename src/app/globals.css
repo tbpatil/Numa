@@ -24,3 +24,201 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pulse-slow-delay-1 {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes pulse-slow-delay-2 {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.05);
+  }
+}
+
+.animate-gradient {
+  animation: gradient 3s ease infinite;
+  background-size: 200% auto;
+}
+
+.delay-1000 {
+  animation-delay: 1s;
+}
+
+.delay-2000 {
+  animation-delay: 2s;
+}
+
+/* Glare hover effect */
+.glare-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.glare-hover::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.6s ease;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.glare-hover:hover::before {
+  left: 100%;
+}
+
+.glare-hover > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Glare effect for gradient buttons */
+.glare-gradient {
+  position: relative;
+  overflow: hidden;
+}
+
+.glare-gradient::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.4),
+    transparent
+  );
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.glare-gradient:hover::after {
+  left: 100%;
+}
+
+.glare-gradient > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Liquid morphing effect */
+@keyframes liquid-morph {
+  0%, 100% {
+    border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%;
+    transform: translate(5px, -5px) rotate(5deg);
+  }
+  50% {
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    transform: translate(-5px, 5px) rotate(-5deg);
+  }
+  75% {
+    border-radius: 70% 30% 50% 50% / 30% 50% 50% 70%;
+    transform: translate(3px, 3px) rotate(3deg);
+  }
+}
+
+@keyframes liquid-morph-2 {
+  0%, 100% {
+    border-radius: 40% 60% 70% 30% / 40% 70% 30% 60%;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    border-radius: 60% 40% 50% 50% / 70% 40% 60% 30%;
+    transform: translate(-3px, 4px) rotate(-3deg);
+  }
+  66% {
+    border-radius: 50% 50% 30% 70% / 30% 60% 70% 40%;
+    transform: translate(4px, -3px) rotate(4deg);
+  }
+}
+
+@keyframes liquid-morph-3 {
+  0%, 100% {
+    border-radius: 50% 50% 50% 50% / 50% 50% 50% 50%;
+    transform: translate(0, 0) rotate(0deg);
+  }
+  20% {
+    border-radius: 60% 40% 60% 40% / 40% 60% 40% 60%;
+    transform: translate(-4px, -2px) rotate(-2deg);
+  }
+  40% {
+    border-radius: 40% 60% 40% 60% / 60% 40% 60% 40%;
+    transform: translate(2px, 4px) rotate(2deg);
+  }
+  60% {
+    border-radius: 70% 30% 70% 30% / 30% 70% 30% 70%;
+    transform: translate(3px, -3px) rotate(3deg);
+  }
+  80% {
+    border-radius: 30% 70% 30% 70% / 70% 30% 70% 30%;
+    transform: translate(-2px, 2px) rotate(-2deg);
+  }
+}
+
+.liquid-shape {
+  animation: liquid-morph 8s ease-in-out infinite;
+}
+
+.liquid-shape-2 {
+  animation: liquid-morph-2 10s ease-in-out infinite;
+}
+
+.liquid-shape-3 {
+  animation: liquid-morph-3 12s ease-in-out infinite;
+}
+
+/* Silver blur effect */
+.silver-blur {
+  filter: blur(40px);
+  background: linear-gradient(135deg, rgba(192, 192, 192, 0.4), rgba(169, 169, 169, 0.3), rgba(211, 211, 211, 0.4));
+  opacity: 0.6;
+}
