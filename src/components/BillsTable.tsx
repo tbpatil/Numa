@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { getVendorLogoFromText } from "@/components/vendorLogo";
 
 export type BillStatus = "pending" | "paid" | "deferred";
 
@@ -282,7 +283,17 @@ export default function BillsTable({
                 className="border-b border-slate-900 last:border-none hover:bg-slate-900/80"
               >
                 <td className="py-2 pr-4">
-                  <div className="flex flex-col">
+                  <div className="flex items-center gap-2">
+                    {(() => {
+                      const logo = getVendorLogoFromText(bill.vendor, bill.category);
+                      return logo ? (
+                        <img
+                          src={logo.src}
+                          alt={logo.alt}
+                          className="w-6 h-6 rounded object-contain"
+                        />
+                      ) : null;
+                    })()}
                     <span className="font-medium text-slate-100">
                       {bill.vendor}
                     </span>
