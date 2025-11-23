@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Numa
 
-## Getting Started
+**Numa** is an AI-powered finance assistant for early-stage startups. Built during the **YC + Locus Agentic Payments Hackathon (YC F25)**, Numa helps founders manage expenses, optimize spending, and maintain financial guardrails, without needing a full-time CFO.  
 
-First, run the development server:
+🔗 **Hackathon project GitHub:** [https://github.com/tbpatil/Numa](https://github.com/tbpatil/Numa)
 
+---
+
+## Table of Contents
+
+- [Problem](#problem)  
+- [Solution](#solution)  
+- [Features](#features)  
+- [Installation](#installation)   
+- [Contributing](#contributing)  
+- [Team](#team)  
+
+---
+
+## Problem
+
+Early-stage startups often face financial challenges:  
+
+- Spending on cloud infrastructure, SaaS tools, AI credits, and contractors without a CFO  
+- Time wasted reviewing invoices and usage patterns  
+- Hidden overspending and inefficient resource allocation  
+- Lack of guardrails for critical financial decisions  
+
+For startups with limited funding, every payment matters.  
+
+---
+
+## Solution
+
+**Numa** acts as an **agentic AI finance assistant**, helping startups make smarter financial decisions. It connects to your existing tools, analyzes spend patterns, and recommends or executes purchases — all while letting you control permissions and limits.  
+
+---
+
+## Features
+
+- Connects to SaaS, cloud, contractor, and workspace spending accounts  
+- Analyzes usage and spending patterns  
+- Recommends or executes purchases based on startup needs  
+- Configurable guardrails: spending limits, categories, and approval workflows  
+- Early prototype demonstrating the potential of AI-native financial operations  
+
+---
+
+## Installation
+
+# Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/tbpatil/Numa.git
+cd Numa
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Install dependencies
+```bash
+pip install -r requirements.txt
+```
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Contributing
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Contributions are welcome! Please submit pull requests or raise issues if you’d like to:
 
-## Learn More
+- Improve automation workflows  
+- Expand integrations with cloud or SaaS platforms  
+- Add new features or improve AI recommendations  
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Team
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Anirudh Venkatachalam** - [@anirudhvee](https://github.com/anirudhvee)  
+- **Manoj Baasha** - [@ManojBaasha](https://github.com/ManojBaasha)  
+- **Roshini Pothapragada** - [@rpothapr](https://github.com/rpothapr)  
+- **Toniya** - [@tbpatil](https://github.com/tbpatil)  
 
-## Deploy on Vercel
+Built during the **YC + Locus Agentic Payments Hackathon (YC F25)**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
