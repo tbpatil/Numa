@@ -60,7 +60,7 @@ pip install -r requirements.txt
 ```
 ---
 
-## Contributing
+## Contribution
 
 Contributions are welcome! Please submit pull requests or raise issues if you’d like to:
 
